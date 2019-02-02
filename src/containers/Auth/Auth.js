@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
-import axios from 'axios';
+import { connect } from 'react-redux';
 import classes from './Auth.module.scss';
 import Button from '../../components/UI/Button/Button';
 import Input from '../../components/UI/Input/Input';
 import { validate, validateForm } from '../../form/formFramework';
+import { auth } from '../../store/actions/auth';
 
-export default class Auth extends Component {
+class Auth extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -60,41 +61,23 @@ export default class Auth extends Component {
     });
   }
 
-  async loginHandler() {
-    const { state } = this;
-    const authData = {
-      email: state.formControls.email.value,
-      password: state.formControls.password.value,
-      returnSecureToken: true,
-    };
-
-    try {
-      const response = await axios.post('https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key=AIzaSyDRNnBkkGKcuqdQ7rPj-fNaHakX1pvDxgk', authData);
-      console.log(response.data);
-    } catch (e) {
-      console.log(e);
-    }
+  loginHandler() {
+    const { state, props } = this;
+    console.log(props);
+    props.auth(
+      state.formControls.email.value,
+      state.formControls.password.value,
+      true,
+    );
   }
 
-  async registerHandler() {
-    const { state } = this;
-    const authData = {
-      email: state.formControls.email.value,
-      password: state.formControls.password.value,
-      returnSecureToken: true,
-    };
-
-    try {
-      const response = await axios.post('https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=AIzaSyDRNnBkkGKcuqdQ7rPj-fNaHakX1pvDxgk', authData);
-      console.log(response.data);
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  submitHandler(evt) {
-    console.log(this);
-    evt.preventDefault();
+  registerHandler() {
+    const { state, props } = this;
+    props.auth(
+      state.formControls.email.value,
+      state.formControls.password.value,
+      false,
+    );
   }
 
   renderInputs() {
@@ -120,7 +103,7 @@ export default class Auth extends Component {
       <div className={classes.Auth}>
         <div>
           <h1>Авторизация</h1>
-          <form className={classes.AuthForm} onSubmit={this.submitHandler}>
+          <form className={classes.AuthForm} onSubmit={evt => evt.preventDefault()}>
             {this.renderInputs()}
             <Button
               type="success"
@@ -142,3 +125,9 @@ export default class Auth extends Component {
     );
   }
 }
+
+const mapDispatchToProps = dispatch => ({
+  auth: (email, password, isLogin) => dispatch(auth(email, password, isLogin)),
+});
+
+export default connect(null, mapDispatchToProps)(Auth);
